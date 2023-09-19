@@ -16,9 +16,12 @@ GLuint VAO, VBO, shader, uniformModel;
 bool direction = true;
 float trioffset = 0.0f;
 float triMaxoffset = 0.7f;
-float triIncrement = 0.0005f;
+float triIncrement = 0.00005f;
 float currAngle;
-
+bool flipDirection = true;
+float maxSize = 1.0f;
+float minSize =0.01f;
+float currSize = minSize;
 //vertex shader
 static const char* vShader = "                                              \n\
 #version 330                                                                \n\
@@ -29,7 +32,7 @@ uniform mat4 model;                                                        \n\
                                                                             \n\
 void main ()                                                                \n\
 {                                                                           \n\
-    gl_Position	= model * vec4 (0.4 * pos.x , 0.4 * pos.y, pos.z, 1.0);      \n\
+    gl_Position	= model * vec4 (pos, 1.0);      \n\
 }";
 
 //fragment shader
@@ -205,15 +208,32 @@ int main()
 		// Refer the lect 9 from beginner section.
 		glm::mat4 model(1.0f);
 
+		if (flipDirection)
+		{
+			currSize += 0.0001f;
+		}
+		else
+		{
+			currSize -= 0.0001f;
+		}
+
+		if (currSize >= maxSize || currSize <= minSize)
+		{
+			flipDirection = !flipDirection;
+		}
 
 		//for linear transformation
 		model = glm::translate(model, glm::vec3(trioffset, 0.0f, 0.0f));
+
+		//for scaling
+		model = glm::scale(model, glm::vec3(currSize, currSize, 1.0f));
 
 		currAngle += 0.1f;
 		if (currAngle >= 360)
 			currAngle -= 360;
 		//for rotation
 		model = glm::rotate(model, currAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		 
